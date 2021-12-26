@@ -44,7 +44,7 @@ class SupportCenterHelpContainerView: UIView {
         l.translatesAutoresizingMaskIntoConstraints = false
         l.font = UIFont.preferredFont(forTextStyle: .headline).withTraits(traits: .traitBold)
         l.textColor = .label
-        l.text = "Need Help?"
+        l.text = "帮助一杯变得更好"
         return l
     }()
 
