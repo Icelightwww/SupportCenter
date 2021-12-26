@@ -1,6 +1,6 @@
 //
 //  ComposeController.swift
-//  
+//
 //
 //  Created by Aaron Satterfield on 5/8/20.
 //
@@ -64,7 +64,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
         t.translatesAutoresizingMaskIntoConstraints = false
         t.textContentType = .emailAddress
         t.keyboardType = .emailAddress
-        t.placeholder = "在此处填写您的电子邮件地址，我们将尽快答复。"
+        t.placeholder = "在此处填写您的电子邮件地址（可留空），我们将尽快答复。" //本来想改 就这样吧 只给一杯用
         t.autocapitalizationType = .none
         t.heightAnchor.constraint(equalToConstant: 50.0).isActive = true
         t.addTarget(self, action: #selector(self.emailTextValueDidChange(sender:)), for: .editingChanged)
@@ -76,8 +76,8 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
         let v = MessageTextView()
         v.translatesAutoresizingMaskIntoConstraints = false
         if option.title == "故障反馈"{v.placeholder = "如果可以，请包括问题发生日期、时间、频率。必要时可点击下方按钮添加照片。"}
-        else if option.title == "改进及建议"{v.placeholder = "请在此处填写，必要时可点击下方按钮添加照片。一杯十分感谢您的宝贵建议。"}
-        else{v.placeholder = "在此处填写详细内容，必要时可点击下方按钮添加照片。"}
+        else if option.title == "改进及建议"{v.placeholder = "请在此处填写，必要时可点击下方按钮添加照片。"}
+        else{v.placeholder = "在此处填写详细内容，必要时可点击下方按钮添加照片。"}//Customized to adapt the APP "ACUP". You can modify this.
         v.placeholderColor = .placeholderText
         v.font = UIFont.preferredFont(forTextStyle: .body)
         v.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
@@ -166,12 +166,16 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
     }
 
     @objc func actionSend(sender: UIBarButtonItem) {
-        guard let senderEmail = email?.rawValue else { return }
+        print("jsd")
+        guard let senderEmail = email?.rawValue else {
+            let senderEmail = "No Contact Provided."
+        }  //In case of not wating to force to provide a valid email address, just let it go
         guard let content = messageTextView.text, !content.isEmpty else { return }
         view.endEditing(true)
         sender.isEnabled = false
         let loadingAlert = ProgressAlert(title: "请稍候", message: nil, preferredStyle: .alert)
         present(loadingAlert, animated: true, completion: nil)
+        print("laks")
         SupportCenter.sendgrid?.sendSupportEmail(ofType: option, senderEmail: senderEmail, message: content, attachments: attachments, completion: { [weak self] (result) in
             loadingAlert.dismiss(animated: true, completion: {
                 self?.handleSendResult(result: result, sender: sender)
@@ -205,8 +209,13 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
     }
 
     func checkSendButton() {
-        let sendEnabled = email != nil
-        navigationItem.rightBarButtonItem?.isEnabled = true
+        //let sendEnabled = email != nil
+        if messageTextView.text != nil && messageTextView.text != ""{
+            let sendEnabled = true
+        }else{
+            let sendEnabled = false
+        }
+        navigationItem.rightBarButtonItem?.isEnabled = sendEnabled
     }
 
     func didSelectAddItem() {
@@ -249,7 +258,7 @@ extension ComposeViewController: UINavigationControllerDelegate, UIImagePickerCo
                 DispatchQueue.global(qos: .utility).async {
                     let options = PHImageRequestOptions()
                     options.isNetworkAccessAllowed = true
-                    let loadingAlert = ProgressAlert(title: "Loading Attachment", message: nil, preferredStyle: .alert)
+                    let loadingAlert = ProgressAlert(title: "加载中...", message: nil, preferredStyle: .alert)
                     PHImageManager.default().requestImage(for: asset, targetSize: CGSize(width: 210, height: 210), contentMode: .aspectFill, options: options) { (image, _) in
                         thumbnail = image ?? thumbnail
                         sem.signal()
@@ -286,7 +295,7 @@ extension ComposeViewController: UINavigationControllerDelegate, UIImagePickerCo
 
     func addAttachment(_ attachment: Attachment) {
         guard attachment.size + currentAttachmentsSize() < maxAttachmentsSize else {
-            self.presentAlert(title: "25MB Exceeded", description: "Attachements cannot exceed 25MB", dismissed: nil)
+            self.presentAlert(title: "超出文件大小限制", description: "请将文件控制在25MB以内。", dismissed: nil)
             return
         }
         attachments.append(attachment)
