@@ -29,7 +29,7 @@ class Sendgrid: NSObject {
     }
 
     func sendSupportEmail(ofType type: ReportOption, senderEmail: String, message: String, attachments: [Attachment], completion: @escaping (_: SendEmailResponse) -> Void) {
-        let content = [SendgridEmailBody.Content(value: createSupportHTML(with: message, metadata: metadata), type: .html)]
+        let content = [SendgridEmailBody.Content(value: createSupportHTML(with: "UserContact:\(senderEmail) \n" + message, metadata: metadata), type: .html)]
         let emailAttachments = attachments.map { $0.getSengridAttachment() }
         let emailBody = SendgridEmailBody(to: configuration.supportEmail, from: configuration.fromEmail, replyTo: senderEmail, subject: type.emailSubject, content: content, attachments: emailAttachments)
         guard let body = try? jsonEncoder.encode(emailBody) else {
