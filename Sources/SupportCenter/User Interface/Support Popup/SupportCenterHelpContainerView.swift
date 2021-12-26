@@ -52,7 +52,7 @@ class SupportCenterHelpContainerView: UIView {
         let b = UIButton(type: .system)
         b.translatesAutoresizingMaskIntoConstraints = false
         b.heightAnchor.constraint(equalToConstant: 44.0).isActive = true
-        b.setTitle("Cancel", for: .normal)
+        b.setTitle("取消", for: .normal)
         b.addTarget(self, action: #selector(self.actionCancel), for: .touchUpInside)
         return b
     }()
