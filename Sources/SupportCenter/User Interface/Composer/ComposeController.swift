@@ -64,7 +64,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
         t.translatesAutoresizingMaskIntoConstraints = false
         t.textContentType = .emailAddress
         t.keyboardType = .emailAddress
-        t.placeholder = "Enter your email"
+        t.placeholder = "在此处填写您的电子邮件地址，我们将尽快答复。"
         t.autocapitalizationType = .none
         t.heightAnchor.constraint(equalToConstant: 50.0).isActive = true
         t.addTarget(self, action: #selector(self.emailTextValueDidChange(sender:)), for: .editingChanged)
@@ -75,7 +75,9 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
     lazy var messageTextView: MessageTextView = {
         let v = MessageTextView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.placeholder = "Please try to be as detailed as possible."
+        if option.title == "故障反馈"{v.placeholder = "如果可以，请包括问题发生日期、时间、频率。必要时可点击下方按钮添加照片。"}
+        else if option.title == "改进及建议"{v.placeholder = "请在此处填写，必要时可点击下方按钮添加照片。一杯十分感谢您的宝贵建议。"}
+        else{v.placeholder = "在此处填写详细内容，必要时可点击下方按钮添加照片。"}
         v.placeholderColor = .placeholderText
         v.font = UIFont.preferredFont(forTextStyle: .body)
         v.setContentCompressionResistancePriority(.defaultLow, for: .vertical)
@@ -168,7 +170,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
         guard let content = messageTextView.text, !content.isEmpty else { return }
         view.endEditing(true)
         sender.isEnabled = false
-        let loadingAlert = ProgressAlert(title: "Sending", message: nil, preferredStyle: .alert)
+        let loadingAlert = ProgressAlert(title: "请稍候", message: nil, preferredStyle: .alert)
         present(loadingAlert, animated: true, completion: nil)
         SupportCenter.sendgrid?.sendSupportEmail(ofType: option, senderEmail: senderEmail, message: content, attachments: attachments, completion: { [weak self] (result) in
             loadingAlert.dismiss(animated: true, completion: {
@@ -180,7 +182,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
     func handleSendResult(result: SendEmailResponse, sender: UIBarButtonItem) {
         switch result {
         case .success:
-            let sendAlert = self.presentAlert(title: "Success", description: "Thanks for helping to make this app better.", showDismiss: false, dismissed: nil)
+            let sendAlert = self.presentAlert(title: "已发送", description: "感谢您的反馈！", showDismiss: false, dismissed: nil)
             DispatchQueue.main.asyncAfter(deadline: .now()+3.0) {
                 sendAlert.dismiss(animated: true, completion: {
                     self.dismiss(animated: true, completion: nil)
@@ -189,7 +191,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
         case .failure(let error):
             print(error)
             sender.isEnabled = true
-            self.presentAlert(title: "Failed to Send Feedback", description: error.localizedDescription, dismissed: nil)
+            self.presentAlert(title: "反馈失败", description: error.localizedDescription, dismissed: nil)
         }
 
     }
@@ -204,7 +206,7 @@ class ComposeViewController: UIViewController, AttachmentsViewDelegate {
 
     func checkSendButton() {
         let sendEnabled = email != nil
-        navigationItem.rightBarButtonItem?.isEnabled = sendEnabled
+        navigationItem.rightBarButtonItem?.isEnabled = true
     }
 
     func didSelectAddItem() {
